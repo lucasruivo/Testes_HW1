@@ -56,7 +56,7 @@
 			<artifactId>cucumber-java</artifactId>
 			<scope>test</scope>
 		</dependency>
-		       <dependency>
+	       <dependency>
             <groupId>io.github.bonigarcia</groupId>
             <artifactId>selenium-jupiter</artifactId>
             <version>6.3.1</version>
@@ -130,7 +130,12 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.0.0-M8</version>
+				<version>3.2.5</version>
+				<configuration>
+					<!-- Evita warnings do Mockito sobre dynamic agent loading e prepara o futuro JDK -->
+					<!-- IMPORTANT: preserve JaCoCo agent args via ${argLine} set by jacoco:prepare-agent -->
+					<argLine>${argLine} -XX:+EnableDynamicAgentLoading -Xshare:off</argLine>
+				</configuration>
 			</plugin>
 			<plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -138,8 +143,8 @@
                 <version>3.10.1</version>
                 <configuration>
                     <encoding>UTF-8</encoding>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
                 </configuration>
             </plugin>
 			<plugin>

@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.example.zeromonos.StaffFunctionalTest
 -------------------------------------------------------------------------------
-Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 8.124 s - in com.example.zeromonos.StaffFunctionalTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 10.62 s -- in com.example.zeromonos.StaffFunctionalTest

@@ -26,6 +26,40 @@ public class BookingTest {
     }
 
     @Test
+    void AddMultipleStatesShouldKeepOrder() {
+        Booking booking = new Booking();
+        booking.addState(BookingState.EM_PROG);
+        booking.addState(BookingState.CONCLUIDO);
+
+        List<BookingStateHistory> history = booking.getStateHistory();
+        assertEquals(3, history.size());
+        assertEquals(BookingState.RECEBIDO, history.get(0).getStatus());
+        assertEquals(BookingState.EM_PROG, history.get(1).getStatus());
+        assertEquals(BookingState.CONCLUIDO, history.get(2).getStatus());
+    }
+
+    @Test
+    void FailWhenDateIsWeekend() {
+        Booking booking = validBooking();
+
+        LocalDate saturday = LocalDate.now().with(DayOfWeek.SATURDAY);
+        if (saturday.isBefore(LocalDate.now())) saturday = saturday.plusWeeks(1);
+        booking.setRequestedDate(saturday);
+
+        Exception e = assertThrows(IllegalArgumentException.class, booking::validateSelf);
+        assertTrue(e.getMessage().contains("Não é permitido fazer pedidos ao fim de semana."));
+    }
+
+    @Test
+    void StoreStatusAndTimestamp() {
+        Booking booking = new Booking();
+        BookingStateHistory history = new BookingStateHistory(booking, BookingState.CONCLUIDO);
+
+        assertNotNull(history.getTimestamp());
+        assertEquals(BookingState.CONCLUIDO, history.getStatus());
+    }
+
+    @Test
     void AddNewStateAndKeepHistory() {
         Booking booking = new Booking();
         booking.addState(BookingState.EM_PROG);
@@ -38,21 +72,8 @@ public class BookingTest {
     @Test
     void AddingSameStateTwiceDoesNotDuplicate() {
         Booking booking = new Booking();
-        booking.addState(BookingState.RECEBIDO); // mesmo estado inicial
+        booking.addState(BookingState.RECEBIDO);
         assertEquals(1, booking.getStateHistory().size(), "Não deve duplicar o estado inicial");
-    }
-
-    @Test
-    void AddMultipleStatesShouldKeepOrder() {
-        Booking booking = new Booking();
-        booking.addState(BookingState.EM_PROG);
-        booking.addState(BookingState.CONCLUIDO);
-
-        List<BookingStateHistory> history = booking.getStateHistory();
-        assertEquals(3, history.size());
-        assertEquals(BookingState.RECEBIDO, history.get(0).getStatus());
-        assertEquals(BookingState.EM_PROG, history.get(1).getStatus());
-        assertEquals(BookingState.CONCLUIDO, history.get(2).getStatus());
     }
 
     @Test
@@ -111,33 +132,12 @@ public class BookingTest {
     }
 
     @Test
-    void FailWhenDateIsWeekend() {
-        Booking booking = validBooking();
-
-        LocalDate saturday = LocalDate.now().with(DayOfWeek.SATURDAY);
-        if (saturday.isBefore(LocalDate.now())) saturday = saturday.plusWeeks(1);
-        booking.setRequestedDate(saturday);
-
-        Exception e = assertThrows(IllegalArgumentException.class, booking::validateSelf);
-        assertTrue(e.getMessage().contains("Não é permitido fazer pedidos ao fim de semana."));
-    }
-
-    @Test
     void FailWhenDateTooSoon() {
         Booking booking = validBooking();
         booking.setRequestedDate(nextWeekday(1));
 
         Exception e = assertThrows(IllegalArgumentException.class, booking::validateSelf);
         assertTrue(e.getMessage().contains("O pedido deve ser feito com pelo menos 3 dias de antecedência"));
-    }
-
-    @Test
-    void StoreStatusAndTimestamp() {
-        Booking booking = new Booking();
-        BookingStateHistory history = new BookingStateHistory(booking, BookingState.CONCLUIDO);
-
-        assertNotNull(history.getTimestamp());
-        assertEquals(BookingState.CONCLUIDO, history.getStatus());
     }
 
     @Test

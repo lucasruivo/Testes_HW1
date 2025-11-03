@@ -7,6 +7,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.chrome.ChromeOptions;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,7 +21,14 @@ public class CitizenSteps {
 
     @Given("que estou na página inicial do cidadão")
     public void open_homepage() {
-        driver = new ChromeDriver();
+        ChromeOptions options = new ChromeOptions();
+        boolean headless = Boolean.parseBoolean(System.getProperty("headless", "false"))
+                || "true".equalsIgnoreCase(System.getenv("HEADLESS"))
+                || "true".equalsIgnoreCase(System.getenv("CI"));
+        if (headless) {
+            options.addArguments("--headless=new", "--disable-gpu", "--window-size=1400,900");
+        }
+        driver = new ChromeDriver(options);
         wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         driver.get("http://localhost:8080/index.html"); // adapta o porto conforme necessário
     }

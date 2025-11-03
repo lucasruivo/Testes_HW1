@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.example.zeromonos.RunCucumberTest
 -------------------------------------------------------------------------------
-Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 29.661 s - in com.example.zeromonos.RunCucumberTest
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 22.42 s -- in com.example.zeromonos.RunCucumberTest

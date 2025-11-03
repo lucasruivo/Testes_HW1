@@ -1,6 +1,7 @@
 com/example/zeromonos/CitizenSteps.class
 com/example/zeromonos/RunCucumberTest.class
 com/example/zeromonos/BookingTest.class
+com/example/zeromonos/CucumberSpringConfiguration.class
 com/example/zeromonos/BookingServiceTest.class
 com/example/zeromonos/BookingIntegrationTest.class
 com/example/zeromonos/BookingPerformanceTest.class
