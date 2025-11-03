@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class BookingTest {
 
     @Test
-    void shouldInitializeWithReceivedStateAndToken() {
+    void InitializeWithReceivedStateAndToken() {
         Booking booking = new Booking();
 
         assertNotNull(booking.getToken());
@@ -23,7 +23,7 @@ public class BookingTest {
     }
 
     @Test
-    void shouldAddNewStateAndKeepHistory() {
+    void AddNewStateAndKeepHistory() {
         Booking booking = new Booking();
         booking.addState(BookingState.EM_PROG);
 
@@ -33,7 +33,7 @@ public class BookingTest {
     }
 
     @Test
-    void shouldSetAndGetFields() {
+    void SetAndGetFields() {
         Booking booking = new Booking();
         booking.setMunicipality("Lisboa");
         booking.setDescription("Troca de contador");
@@ -45,16 +45,14 @@ public class BookingTest {
         assertEquals("09:00", booking.getTimeSlot());
     }
 
-    // --- Novos testes de regras de domínio ---
-
     @Test
-    void shouldPassValidationWhenAllFieldsValid() {
+    void PassValidationWhenAllFieldsValid() {
         Booking booking = validBooking();
         assertDoesNotThrow(booking::validateSelf);
     }
 
     @Test
-    void shouldFailWhenMunicipalityMissing() {
+    void FailWhenMunicipalityMissing() {
         Booking booking = validBooking();
         booking.setMunicipality(null);
 
@@ -63,7 +61,7 @@ public class BookingTest {
     }
 
     @Test
-    void shouldFailWhenDescriptionMissing() {
+    void FailWhenDescriptionMissing() {
         Booking booking = validBooking();
         booking.setDescription("   ");
 
@@ -72,7 +70,7 @@ public class BookingTest {
     }
 
     @Test
-    void shouldFailWhenDateMissing() {
+    void FailWhenDateMissing() {
         Booking booking = validBooking();
         booking.setRequestedDate(null);
 
@@ -81,7 +79,7 @@ public class BookingTest {
     }
 
     @Test
-    void shouldFailWhenTimeSlotMissing() {
+    void FailWhenTimeSlotMissing() {
         Booking booking = validBooking();
         booking.setTimeSlot("");
 
@@ -90,10 +88,9 @@ public class BookingTest {
     }
 
     @Test
-    void shouldFailWhenDateIsWeekend() {
+    void FailWhenDateIsWeekend() {
         Booking booking = validBooking();
 
-        // Força para um sábado
         LocalDate saturday = LocalDate.now().with(DayOfWeek.SATURDAY);
         if (saturday.isBefore(LocalDate.now())) saturday = saturday.plusWeeks(1);
 
@@ -104,7 +101,7 @@ public class BookingTest {
     }
 
     @Test
-    void shouldFailWhenDateTooSoon() {
+    void FailWhenDateTooSoon() {
         Booking booking = validBooking();
         booking.setRequestedDate(nextWeekday(2));
 
@@ -113,7 +110,7 @@ public class BookingTest {
     }
 
     @Test
-    void shouldStoreStatusAndTimestamp() {
+    void StoreStatusAndTimestamp() {
         Booking booking = new Booking();
         BookingStateHistory history = new BookingStateHistory(booking, BookingState.CONCLUIDO);
 
@@ -121,7 +118,6 @@ public class BookingTest {
         assertEquals(BookingState.CONCLUIDO, history.getStatus());
     }
 
-    // --- Método auxiliar ---
     private Booking validBooking() {
         Booking booking = new Booking();
         booking.setMunicipality("Lisboa");
@@ -131,7 +127,6 @@ public class BookingTest {
         return booking;
     }
 
-    // --- Garante que a data não cai num fim de semana ---
     private LocalDate nextWeekday(int daysAhead) {
         LocalDate date = LocalDate.now().plusDays(daysAhead);
         while (date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY) {

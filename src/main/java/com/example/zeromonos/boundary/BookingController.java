@@ -49,6 +49,7 @@ public class BookingController {
         return bookingService.getAllBookings();
     }
 
+    // Atualizar estado do booking
     @PutMapping("/{token}")
     public Booking updateBookingStatus(@PathVariable String token, @RequestParam String status) {
         try {

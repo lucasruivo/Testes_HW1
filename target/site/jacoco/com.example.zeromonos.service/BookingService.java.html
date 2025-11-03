@@ -22,30 +22,30 @@ public class BookingService {
 <span class="fc" id="L22">        this.municipioService = municipioService;</span>
 <span class="fc" id="L23">    }</span>
 
-    // --- Criação de booking com regras de negócio externas ---
+    // Cria booking com validações
     public Booking createBooking(Booking booking) {
+
         // Validação interna (do próprio booking)
-<span class="fc" id="L28">        booking.validateSelf();</span>
+<span class="fc" id="L29">        booking.validateSelf();</span>
 
         // Valida município
-<span class="pc bpc" id="L31" title="1 of 2 branches missed.">        if (!municipioService.isValidMunicipality(booking.getMunicipality())) {</span>
-<span class="nc" id="L32">            throw new IllegalArgumentException(&quot;Município inválido: &quot; + booking.getMunicipality());</span>
+<span class="pc bpc" id="L32" title="1 of 2 branches missed.">        if (!municipioService.isValidMunicipality(booking.getMunicipality())) {</span>
+<span class="nc" id="L33">            throw new IllegalArgumentException(&quot;Município inválido: &quot; + booking.getMunicipality());</span>
         }
 
         // Limite diário por município
-<span class="fc" id="L36">        long count = repository.findByMunicipality(booking.getMunicipality()).stream()</span>
-<span class="fc" id="L37">                .filter(b -&gt; b.getRequestedDate().equals(booking.getRequestedDate()))</span>
-<span class="fc" id="L38">                .count();</span>
-<span class="fc bfc" id="L39" title="All 2 branches covered.">        if (count &gt;= LIMITE_DIARIO) {</span>
-<span class="fc" id="L40">            throw new IllegalArgumentException(&quot;Limite de pedidos atingido para este dia&quot;);</span>
+<span class="fc" id="L37">        long count = repository.findByMunicipality(booking.getMunicipality()).stream()</span>
+<span class="fc" id="L38">                .filter(b -&gt; b.getRequestedDate().equals(booking.getRequestedDate()))</span>
+<span class="fc" id="L39">                .count();</span>
+<span class="fc bfc" id="L40" title="All 2 branches covered.">        if (count &gt;= LIMITE_DIARIO) {</span>
+<span class="fc" id="L41">            throw new IllegalArgumentException(&quot;Limite de pedidos atingido para este dia&quot;);</span>
         }
 
-        // Conflito de horário para o mesmo usuário
-<span class="fc" id="L44">        boolean hasConflict = repository.findAll().stream()</span>
-<span class="fc bfc" id="L45" title="All 2 branches covered.">                .anyMatch(b -&gt; b.getRequestedDate().equals(booking.getRequestedDate())</span>
-<span class="fc bfc" id="L46" title="All 2 branches covered.">                        &amp;&amp; b.getTimeSlot().equals(booking.getTimeSlot())</span>
-<span class="fc bfc" id="L47" title="All 2 branches covered.">                        &amp;&amp; b.getStatus() != BookingState.CANCELADO);</span>
-
+        // Conflito de horário
+<span class="fc" id="L45">        boolean hasConflict = repository.findAll().stream()</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">                .anyMatch(b -&gt; b.getRequestedDate().equals(booking.getRequestedDate())</span>
+<span class="fc bfc" id="L47" title="All 2 branches covered.">                        &amp;&amp; b.getTimeSlot().equals(booking.getTimeSlot())</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">                        &amp;&amp; b.getStatus() != BookingState.CANCELADO);</span>
 <span class="fc bfc" id="L49" title="All 2 branches covered.">        if (hasConflict) {</span>
 <span class="fc" id="L50">            throw new IllegalArgumentException(&quot;Não é possível reservar dois serviços no mesmo horário.&quot;);</span>
         }
@@ -62,42 +62,43 @@ public class BookingService {
 <span class="fc" id="L62">        return repository.save(booking);</span>
     }
 
-    // --- Buscar booking pelo token ---
+    // Booking por token
     public Optional&lt;Booking&gt; getBookingByToken(String token) {
 <span class="fc" id="L67">        return repository.findByToken(token);</span>
     }
 
-    // --- Listar bookings ---
+    // Booking por município
     public List&lt;Booking&gt; getBookingsByMunicipality(String municipality) {
 <span class="fc" id="L72">        return repository.findByMunicipality(municipality);</span>
     }
 
+    // Todos os bookings
     public List&lt;Booking&gt; getAllBookings() {
-<span class="fc" id="L76">        return repository.findAll();</span>
+<span class="fc" id="L77">        return repository.findAll();</span>
     }
 
-    // --- Atualizar estado com transições válidas ---
+    // Atualizar estado com transições válidas
     public Booking updateBookingStatus(String token, BookingState novoEstado) {
-<span class="fc" id="L81">        Booking booking = repository.findByToken(token)</span>
-<span class="pc" id="L82">                .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Reserva não encontrada para o token fornecido.&quot;));</span>
+<span class="fc" id="L82">        Booking booking = repository.findByToken(token)</span>
+<span class="pc" id="L83">                .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Reserva não encontrada para o token fornecido.&quot;));</span>
 
-<span class="fc" id="L84">        BookingState estadoAtual = booking.getStatus();</span>
-<span class="fc" id="L85">        boolean validTransition = false;</span>
+<span class="fc" id="L85">        BookingState estadoAtual = booking.getStatus();</span>
+<span class="fc" id="L86">        boolean validTransition = false;</span>
 
-<span class="fc bfc" id="L87" title="All 2 branches covered.">        if (estadoAtual == BookingState.RECEBIDO) {</span>
-<span class="pc bpc" id="L88" title="1 of 4 branches missed.">            validTransition = (novoEstado == BookingState.EM_PROG || novoEstado == BookingState.CANCELADO);</span>
-<span class="fc bfc" id="L89" title="All 2 branches covered.">        } else if (estadoAtual == BookingState.EM_PROG) {</span>
-<span class="pc bpc" id="L90" title="3 of 4 branches missed.">            validTransition = (novoEstado == BookingState.CONCLUIDO || novoEstado == BookingState.CANCELADO);</span>
-<span class="pc bpc" id="L91" title="3 of 4 branches missed.">        } else if (estadoAtual == BookingState.CONCLUIDO || estadoAtual == BookingState.CANCELADO) {</span>
-<span class="fc" id="L92">            validTransition = false; // estados finais, nenhuma transição permitida</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">        if (estadoAtual == BookingState.RECEBIDO) {</span>
+<span class="pc bpc" id="L89" title="1 of 4 branches missed.">            validTransition = (novoEstado == BookingState.EM_PROG || novoEstado == BookingState.CANCELADO);</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">        } else if (estadoAtual == BookingState.EM_PROG) {</span>
+<span class="pc bpc" id="L91" title="3 of 4 branches missed.">            validTransition = (novoEstado == BookingState.CONCLUIDO || novoEstado == BookingState.CANCELADO);</span>
+<span class="pc bpc" id="L92" title="3 of 4 branches missed.">        } else if (estadoAtual == BookingState.CONCLUIDO || estadoAtual == BookingState.CANCELADO) {</span>
+<span class="fc" id="L93">            validTransition = false;</span>
         }
 
-<span class="fc bfc" id="L95" title="All 2 branches covered.">        if (!validTransition) {</span>
-<span class="fc" id="L96">            throw new IllegalArgumentException(&quot;Transição inválida de &quot; + estadoAtual + &quot; para &quot; + novoEstado);</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">        if (!validTransition) {</span>
+<span class="fc" id="L97">            throw new IllegalArgumentException(&quot;Transição inválida de &quot; + estadoAtual + &quot; para &quot; + novoEstado);</span>
         }
 
-<span class="fc" id="L99">        booking.addState(novoEstado);</span>
-<span class="fc" id="L100">        return repository.save(booking);</span>
+<span class="fc" id="L100">        booking.addState(novoEstado);</span>
+<span class="fc" id="L101">        return repository.save(booking);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

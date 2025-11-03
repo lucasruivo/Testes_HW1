@@ -41,7 +41,7 @@ class BookingIntegrationTest {
         booking.setMunicipality("Lisboa");
         booking.setDescription("Teste IT");
 
-        // Garante que não cai em fim de semana
+        // Garante que não cai num fim de semana
         LocalDate requestedDate = LocalDate.now().plusDays(5);
         while (requestedDate.getDayOfWeek() == DayOfWeek.SATURDAY
             || requestedDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
@@ -54,7 +54,7 @@ class BookingIntegrationTest {
     }
 
     @Test
-    void shouldCreateBooking() throws Exception {
+    void CreateBooking() throws Exception {
         Booking newBooking = new Booking();
         newBooking.setMunicipality("Lisboa");
         newBooking.setDescription("Nova reserva");
@@ -76,7 +76,7 @@ class BookingIntegrationTest {
     }
 
     @Test
-    void shouldGetBookingByToken() throws Exception {
+    void GetBookingByToken() throws Exception {
         mockMvc.perform(get("/api/bookings/{token}", booking.getToken()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.description").value("Teste IT"))
@@ -84,7 +84,7 @@ class BookingIntegrationTest {
     }
 
     @Test
-    void shouldUpdateBookingStatus() throws Exception {
+    void UpdateBookingStatus() throws Exception {
         mockMvc.perform(put("/api/bookings/{token}", booking.getToken())
                 .param("status", "EM_PROG"))
                 .andExpect(status().isOk())
@@ -92,7 +92,7 @@ class BookingIntegrationTest {
     }
 
     @Test
-    void shouldReturnErrorForInvalidStateUpdate() throws Exception {
+    void ReturnErrorForInvalidStateUpdate() throws Exception {
         mockMvc.perform(put("/api/bookings/{token}", booking.getToken())
                 .param("status", "INVALIDO"))
                 .andExpect(status().isBadRequest())
@@ -100,7 +100,7 @@ class BookingIntegrationTest {
     }
 
     @Test
-    void shouldListBookingsByMunicipality() throws Exception {
+    void ListBookingsByMunicipality() throws Exception {
         mockMvc.perform(get("/api/bookings")
                 .param("municipality", "Lisboa"))
                 .andExpect(status().isOk())
@@ -108,7 +108,7 @@ class BookingIntegrationTest {
     }
 
     @Test
-    void shouldCancelBooking() throws Exception {
+    void CancelBooking() throws Exception {
         mockMvc.perform(delete("/api/bookings/{token}", booking.getToken()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(BookingState.CANCELADO.toString()));

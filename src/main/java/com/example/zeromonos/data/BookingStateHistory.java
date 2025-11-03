@@ -2,8 +2,6 @@ package com.example.zeromonos.data;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import com.example.zeromonos.data.BookingState;
-import com.example.zeromonos.data.Booking;
 
 @Entity
 public class BookingStateHistory {
@@ -28,7 +26,6 @@ public class BookingStateHistory {
         this.timestamp = LocalDateTime.now();
     }
 
-    // getters
     public LocalDateTime getTimestamp() { return timestamp; }
     public BookingState getStatus() { return status; }
 }

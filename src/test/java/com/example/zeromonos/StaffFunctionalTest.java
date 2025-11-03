@@ -36,7 +36,6 @@ class StaffFunctionalTest {
     @BeforeEach
     void setup() throws Exception {
 
-        // --- Criar novo booking via API ---
         HttpClient client = HttpClient.newHttpClient();
         String bookingJson = """
         {
@@ -69,22 +68,21 @@ class StaffFunctionalTest {
     }
 
     @Test
-    void shouldFindAndChangeCreatedBookingStatus() {
+    void FindAndChangeCreatedBookingStatus() {
         driver.get("http://localhost:" + port + "/staff.html");
 
         WebElement municipalityInput = driver.findElement(By.id("municipalityInput"));
         WebElement loadBtn = driver.findElement(By.id("loadBtn"));
 
-        // --- Carregar todos os pedidos ---
         loadBtn.click();
         wait.until(d -> d.findElements(By.cssSelector("#bookingsTable tbody tr")).size() > 0);
         List<WebElement> allRows = driver.findElements(By.cssSelector("#bookingsTable tbody tr"));
         assertThat(allRows).isNotEmpty();
 
-        // --- Filtrar por município ---
         municipalityInput.clear();
         municipalityInput.sendKeys("Lisboa");
         loadBtn.click();
+        
         pause(500);
 
         wait.until(d -> findBookingRow("Lisboa", "Teste Staff", "2025-11-19", "09:00-11:00") != null);
@@ -94,13 +92,11 @@ class StaffFunctionalTest {
                 r.findElement(By.cssSelector("td:first-child")).getText().equalsIgnoreCase("Lisboa")
         )).isTrue();
 
-        // --- Procurar a linha do booking criado via API ---
         WebElement bookingRow = findBookingRow("Lisboa", "Teste Staff", "2025-11-19", "09:00-11:00");
         assertThat(bookingRow)
-                .withFailMessage("❌ Booking criado não encontrado na tabela!")
+                .withFailMessage("Booking criado não encontrado na tabela!")
                 .isNotNull();
 
-        // --- Atualizar estado RECEBIDO → EM_PROG ---
         WebElement actionBtn = bookingRow.findElement(By.cssSelector("td:nth-child(6) button"));
         assertThat(actionBtn.getText()).isEqualTo("Em Progresso");
 
@@ -110,9 +106,9 @@ class StaffFunctionalTest {
         Alert alert = wait.until(ExpectedConditions.alertIsPresent());
         assertThat(alert.getText()).contains("EM_PROG");
         alert.accept();
+
         pause(500);
 
-        // --- Recarregar e verificar mudança para EM_PROG ---
         loadBtn.click();
         wait.until(d -> d.findElements(By.cssSelector("#bookingsTable tbody tr")).size() > 0);
 
@@ -123,7 +119,6 @@ class StaffFunctionalTest {
 
         pause(500);
 
-        // --- Atualizar estado EM_PROG → CONCLUIDO ---
         WebElement nextBtn = refreshedRow.findElement(By.cssSelector("td:nth-child(6) button"));
         assertThat(nextBtn.getText()).isEqualTo("Concluído");
         wait.until(ExpectedConditions.elementToBeClickable(nextBtn));
@@ -132,8 +127,9 @@ class StaffFunctionalTest {
         Alert alert2 = wait.until(ExpectedConditions.alertIsPresent());
         assertThat(alert2.getText()).contains("CONCLUIDO");
         alert2.accept();
+
         pause(500);
-        // --- Recarregar e verificar mudança para CONCLUIDO ---
+
         loadBtn.click();
         wait.until(d -> d.findElements(By.cssSelector("#bookingsTable tbody tr")).size() > 0);
         WebElement finalRow = findBookingRow("Lisboa", "Teste Staff", "2025-11-19", "09:00-11:00");
@@ -142,12 +138,10 @@ class StaffFunctionalTest {
         assertThat(finalStatus.getText()).isEqualTo("CONCLUIDO");
         pause(500);
 
-        // --- Verificar que não há mais botão ---
         List<WebElement> actions = finalRow.findElements(By.cssSelector("td:nth-child(6) button"));
         assertThat(actions).isEmpty();
     }
 
-    // Encontra a linha com base nas colunas
     private WebElement findBookingRow(String municipality, String description, String date, String timeSlot) {
         List<WebElement> rows = driver.findElements(By.cssSelector("#bookingsTable tbody tr"));
         for (WebElement row : rows) {

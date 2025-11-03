@@ -18,7 +18,7 @@ public class Booking {
     private String description;
     private LocalDate requestedDate;
     private String timeSlot;
-    private String token; // token de acesso
+    private String token;
 
     @Enumerated(EnumType.STRING)
     private BookingState status;
@@ -31,7 +31,7 @@ public class Booking {
         addState(BookingState.RECEBIDO);
     }
 
-    // --- Validação interna (regras do domínio) ---
+    // Regras de negócio
     public void validateSelf() {
         if (municipality == null || municipality.isBlank()) {
             throw new IllegalArgumentException("Município é obrigatório.");
@@ -58,14 +58,12 @@ public class Booking {
         }
     }
 
-    // --- Transições de estado ---
     public void addState(BookingState status) {
         this.status = status;
         BookingStateHistory history = new BookingStateHistory(this, status);
         this.stateHistory.add(history);
     }
 
-    // --- Getters e Setters ---
     public String getMunicipality() { return municipality; }
     public void setMunicipality(String municipality) { this.municipality = municipality; }
     public String getDescription() { return description; }

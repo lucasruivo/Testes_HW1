@@ -11,19 +11,17 @@ loadBtn.addEventListener("click", async () => {
     const response = await fetch(url);
     const bookings = await response.json();
 
-    tableBody.innerHTML = ""; // limpa tabela antes de reconstruir
+    tableBody.innerHTML = "";
 
     bookings.forEach(b => {
       const status = (b.status || "").toUpperCase();
 
-      // Determinar qual botão deve aparecer
       let actionButton = '';
       if (status === "RECEBIDO") {
         actionButton = `<button onclick="updateStatus('${b.token}', 'EM_PROG')">Em Progresso</button>`;
       } else if (status === "EM_PROG") {
         actionButton = `<button onclick="updateStatus('${b.token}', 'CONCLUIDO')">Concluído</button>`;
       } else {
-        // CANCELADO ou CONCLUIDO: não mostrar botões
         actionButton = '<em>--------------</em>';
       }
 
@@ -53,7 +51,7 @@ async function updateStatus(token, status) {
     }
 
     alert(`Estado atualizado para ${status}`);
-    loadBtn.click(); // recarrega a tabela
+    loadBtn.click();
   } catch (err) {
     alert(`Erro ao atualizar estado: ${err.message}`);
   }

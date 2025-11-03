@@ -49,17 +49,18 @@ public class BookingController {
 <span class="fc" id="L49">        return bookingService.getAllBookings();</span>
     }
 
+    // Atualizar estado do booking
     @PutMapping(&quot;/{token}&quot;)
     public Booking updateBookingStatus(@PathVariable String token, @RequestParam String status) {
         try {
-<span class="fc" id="L55">            BookingState newState = BookingState.valueOf(status);</span>
-<span class="fc" id="L56">            logger.info(&quot;Atualizar booking token={} para estado={}&quot;, token, newState);</span>
-<span class="fc" id="L57">            return bookingService.updateBookingStatus(token, newState);</span>
-<span class="fc" id="L58">        } catch (IllegalArgumentException e) {</span>
-<span class="fc" id="L59">            logger.warn(&quot;Tentativa de atualizar booking token={} para estado inválido: {}&quot;, token, status);</span>
-<span class="fc" id="L60">            throw new ResponseStatusException(</span>
+<span class="fc" id="L56">            BookingState newState = BookingState.valueOf(status);</span>
+<span class="fc" id="L57">            logger.info(&quot;Atualizar booking token={} para estado={}&quot;, token, newState);</span>
+<span class="fc" id="L58">            return bookingService.updateBookingStatus(token, newState);</span>
+<span class="fc" id="L59">        } catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L60">            logger.warn(&quot;Tentativa de atualizar booking token={} para estado inválido: {}&quot;, token, status);</span>
+<span class="fc" id="L61">            throw new ResponseStatusException(</span>
                     HttpStatus.BAD_REQUEST,
-<span class="fc" id="L62">                    &quot;Estado inválido: &quot; + status + &quot;. Valores válidos: &quot; + java.util.Arrays.toString(BookingState.values())</span>
+<span class="fc" id="L63">                    &quot;Estado inválido: &quot; + status + &quot;. Valores válidos: &quot; + java.util.Arrays.toString(BookingState.values())</span>
             );
         }
     }
@@ -67,8 +68,8 @@ public class BookingController {
     // Cancelar um booking
     @DeleteMapping(&quot;/{token}&quot;)
     public Booking cancelBooking(@PathVariable String token) {
-<span class="fc" id="L70">        logger.info(&quot;Cancelar booking token={}&quot;, token);</span>
-<span class="fc" id="L71">        return bookingService.updateBookingStatus(token, BookingState.CANCELADO);</span>
+<span class="fc" id="L71">        logger.info(&quot;Cancelar booking token={}&quot;, token);</span>
+<span class="fc" id="L72">        return bookingService.updateBookingStatus(token, BookingState.CANCELADO);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

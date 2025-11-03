@@ -18,7 +18,7 @@ public class Booking {
     private String description;
     private LocalDate requestedDate;
     private String timeSlot;
-    private String token; // token de acesso
+    private String token;
 
     @Enumerated(EnumType.STRING)
     private BookingState status;
@@ -31,7 +31,7 @@ public class Booking {
 <span class="fc" id="L31">        addState(BookingState.RECEBIDO);</span>
 <span class="fc" id="L32">    }</span>
 
-    // --- Validação interna (regras do domínio) ---
+    // Regras de negócio
     public void validateSelf() {
 <span class="pc bpc" id="L36" title="1 of 4 branches missed.">        if (municipality == null || municipality.isBlank()) {</span>
 <span class="fc" id="L37">            throw new IllegalArgumentException(&quot;Município é obrigatório.&quot;);</span>
@@ -58,24 +58,22 @@ public class Booking {
         }
 <span class="fc" id="L59">    }</span>
 
-    // --- Transições de estado ---
     public void addState(BookingState status) {
-<span class="fc" id="L63">        this.status = status;</span>
-<span class="fc" id="L64">        BookingStateHistory history = new BookingStateHistory(this, status);</span>
-<span class="fc" id="L65">        this.stateHistory.add(history);</span>
-<span class="fc" id="L66">    }</span>
+<span class="fc" id="L62">        this.status = status;</span>
+<span class="fc" id="L63">        BookingStateHistory history = new BookingStateHistory(this, status);</span>
+<span class="fc" id="L64">        this.stateHistory.add(history);</span>
+<span class="fc" id="L65">    }</span>
 
-    // --- Getters e Setters ---
-<span class="fc" id="L69">    public String getMunicipality() { return municipality; }</span>
-<span class="fc" id="L70">    public void setMunicipality(String municipality) { this.municipality = municipality; }</span>
-<span class="fc" id="L71">    public String getDescription() { return description; }</span>
-<span class="fc" id="L72">    public void setDescription(String description) { this.description = description; }</span>
-<span class="fc" id="L73">    public LocalDate getRequestedDate() { return requestedDate; }</span>
-<span class="fc" id="L74">    public void setRequestedDate(LocalDate requestedDate) { this.requestedDate = requestedDate; }</span>
-<span class="fc" id="L75">    public String getTimeSlot() { return timeSlot; }</span>
-<span class="fc" id="L76">    public void setTimeSlot(String timeSlot) { this.timeSlot = timeSlot; }</span>
-<span class="fc" id="L77">    public String getToken() { return token; }</span>
-<span class="fc" id="L78">    public BookingState getStatus() { return status; }</span>
-<span class="fc" id="L79">    public List&lt;BookingStateHistory&gt; getStateHistory() { return stateHistory; }</span>
+<span class="fc" id="L67">    public String getMunicipality() { return municipality; }</span>
+<span class="fc" id="L68">    public void setMunicipality(String municipality) { this.municipality = municipality; }</span>
+<span class="fc" id="L69">    public String getDescription() { return description; }</span>
+<span class="fc" id="L70">    public void setDescription(String description) { this.description = description; }</span>
+<span class="fc" id="L71">    public LocalDate getRequestedDate() { return requestedDate; }</span>
+<span class="fc" id="L72">    public void setRequestedDate(LocalDate requestedDate) { this.requestedDate = requestedDate; }</span>
+<span class="fc" id="L73">    public String getTimeSlot() { return timeSlot; }</span>
+<span class="fc" id="L74">    public void setTimeSlot(String timeSlot) { this.timeSlot = timeSlot; }</span>
+<span class="fc" id="L75">    public String getToken() { return token; }</span>
+<span class="fc" id="L76">    public BookingState getStatus() { return status; }</span>
+<span class="fc" id="L77">    public List&lt;BookingStateHistory&gt; getStateHistory() { return stateHistory; }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

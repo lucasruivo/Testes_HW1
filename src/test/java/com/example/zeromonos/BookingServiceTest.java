@@ -39,9 +39,8 @@ class BookingServiceTest {
         when(municipioService.isValidMunicipality("Lisboa")).thenReturn(true);
     }
 
-    // --- Criação normal ---
     @Test
-    void shouldCreateValidBooking() {
+    void CreateValidBooking() {
         when(repository.findAll()).thenReturn(List.of());
         when(repository.findByMunicipality("Lisboa")).thenReturn(List.of());
         when(repository.save(any())).thenAnswer(inv -> inv.getArgument(0));
@@ -54,9 +53,8 @@ class BookingServiceTest {
         verify(repository, times(1)).save(validBooking);
     }
 
-    // --- Limite diário por município ---
     @Test
-    void shouldRejectBookingIfDailyLimitReached() {
+    void RejectBookingIfDailyLimitReached() {
         List<Booking> existing = List.of(
                 createBookingWithDateAndState(validBooking.getRequestedDate(), BookingState.RECEBIDO),
                 createBookingWithDateAndState(validBooking.getRequestedDate(), BookingState.RECEBIDO),
@@ -71,9 +69,8 @@ class BookingServiceTest {
         assertEquals("Limite de pedidos atingido para este dia", ex.getMessage());
     }
 
-    // --- Conflito de horário ---
     @Test
-    void shouldRejectBookingIfTimeSlotConflict() {
+    void RejectBookingIfTimeSlotConflict() {
         Booking conflictBooking = createBookingWithDateAndState(validBooking.getRequestedDate(), BookingState.RECEBIDO);
         conflictBooking.setTimeSlot(validBooking.getTimeSlot());
         when(repository.findAll()).thenReturn(List.of(conflictBooking));
@@ -83,13 +80,12 @@ class BookingServiceTest {
         assertEquals("Não é possível reservar dois serviços no mesmo horário.", ex.getMessage());
     }
 
-    // --- Limite de reservas ativas ---
     @Test
-    void shouldRejectBookingIfActiveLimitExceeded() {
+    void RejectBookingIfActiveLimitExceeded() {
         List<Booking> activeBookings = List.of(
-                createBookingWithDateAndState(nextWeekday(5), BookingState.RECEBIDO,"09:00-10:00"),
-                createBookingWithDateAndState(nextWeekday(5), BookingState.EM_PROG,"10:00-11:00"),
-                createBookingWithDateAndState(nextWeekday(6), BookingState.RECEBIDO,"11:00-12:00")
+                createBookingWithDateAndStateAndTimeSlot(nextWeekday(5), BookingState.RECEBIDO,"09:00-10:00"),
+                createBookingWithDateAndStateAndTimeSlot(nextWeekday(5), BookingState.EM_PROG,"10:00-11:00"),
+                createBookingWithDateAndStateAndTimeSlot(nextWeekday(6), BookingState.RECEBIDO,"11:00-12:00")
         );
         when(repository.findAll()).thenReturn(activeBookings);
 
@@ -98,30 +94,25 @@ class BookingServiceTest {
         assertEquals("O cidadão já atingiu o limite de reservas ativas.", ex.getMessage());
     }
 
-    // --- Teste único de todas as transições de estado ---
     @Test
-    void shouldHandleAllStateTransitions() {
+    void HandleAllStateTransitions() {
         validBooking.addState(BookingState.RECEBIDO);
         when(repository.findByToken(validBooking.getToken())).thenReturn(Optional.of(validBooking));
         when(repository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        // RECEBIDO → EM_PROG (válido)
         Booking updated1 = bookingService.updateBookingStatus(validBooking.getToken(), BookingState.EM_PROG);
         assertEquals(BookingState.EM_PROG, updated1.getStatus());
 
-        // EM_PROG → CONCLUIDO (válido)
         when(repository.findByToken(validBooking.getToken())).thenReturn(Optional.of(updated1));
         Booking updated2 = bookingService.updateBookingStatus(validBooking.getToken(), BookingState.CONCLUIDO);
         assertEquals(BookingState.CONCLUIDO, updated2.getStatus());
 
-        // CONCLUIDO → qualquer outro (inválido)
         when(repository.findByToken(validBooking.getToken())).thenReturn(Optional.of(updated2));
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> bookingService.updateBookingStatus(validBooking.getToken(), BookingState.RECEBIDO));
         assertTrue(ex.getMessage().contains("Transição inválida"));
     }
 
-    // --- Auxiliares ---
     private Booking createBookingWithDateAndState(LocalDate date, BookingState state) {
         Booking b = new Booking();
         b.setRequestedDate(date);
@@ -132,7 +123,7 @@ class BookingServiceTest {
         return b;
     }
 
-    private Booking createBookingWithDateAndState(LocalDate date, BookingState state, String timeSlot) {
+    private Booking createBookingWithDateAndStateAndTimeSlot(LocalDate date, BookingState state, String timeSlot) {
         Booking b = new Booking();
         b.setRequestedDate(date);
         b.setTimeSlot(timeSlot);
@@ -142,7 +133,6 @@ class BookingServiceTest {
         return b;
     }
 
-    // --- Garante que a data não cai num fim de semana ---
     private LocalDate nextWeekday(int daysAhead) {
         LocalDate date = LocalDate.now().plusDays(daysAhead);
         while (date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY) {

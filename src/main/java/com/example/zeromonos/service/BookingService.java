@@ -22,8 +22,9 @@ public class BookingService {
         this.municipioService = municipioService;
     }
 
-    // --- Criação de booking com regras de negócio externas ---
+    // Cria booking com validações
     public Booking createBooking(Booking booking) {
+
         // Validação interna (do próprio booking)
         booking.validateSelf();
 
@@ -40,12 +41,11 @@ public class BookingService {
             throw new IllegalArgumentException("Limite de pedidos atingido para este dia");
         }
 
-        // Conflito de horário para o mesmo usuário
+        // Conflito de horário
         boolean hasConflict = repository.findAll().stream()
                 .anyMatch(b -> b.getRequestedDate().equals(booking.getRequestedDate())
                         && b.getTimeSlot().equals(booking.getTimeSlot())
                         && b.getStatus() != BookingState.CANCELADO);
-
         if (hasConflict) {
             throw new IllegalArgumentException("Não é possível reservar dois serviços no mesmo horário.");
         }
@@ -62,21 +62,22 @@ public class BookingService {
         return repository.save(booking);
     }
 
-    // --- Buscar booking pelo token ---
+    // Booking por token
     public Optional<Booking> getBookingByToken(String token) {
         return repository.findByToken(token);
     }
 
-    // --- Listar bookings ---
+    // Booking por município
     public List<Booking> getBookingsByMunicipality(String municipality) {
         return repository.findByMunicipality(municipality);
     }
 
+    // Todos os bookings
     public List<Booking> getAllBookings() {
         return repository.findAll();
     }
 
-    // --- Atualizar estado com transições válidas ---
+    // Atualizar estado com transições válidas
     public Booking updateBookingStatus(String token, BookingState novoEstado) {
         Booking booking = repository.findByToken(token)
                 .orElseThrow(() -> new IllegalArgumentException("Reserva não encontrada para o token fornecido."));
@@ -89,7 +90,7 @@ public class BookingService {
         } else if (estadoAtual == BookingState.EM_PROG) {
             validTransition = (novoEstado == BookingState.CONCLUIDO || novoEstado == BookingState.CANCELADO);
         } else if (estadoAtual == BookingState.CONCLUIDO || estadoAtual == BookingState.CANCELADO) {
-            validTransition = false; // estados finais, nenhuma transição permitida
+            validTransition = false;
         }
 
         if (!validTransition) {

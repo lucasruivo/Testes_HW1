@@ -5,7 +5,7 @@ const bookingSuccess = document.getElementById("bookingSuccess");
 const bookingError = document.getElementById("bookingError");
 const cancelMessage = document.getElementById("cancelMessage");
 
-// === Preencher municípios ===
+// Preencher municípios
 fetch("/api/municipios")
   .then(r => r.json())
   .then(data => {
@@ -20,7 +20,7 @@ fetch("/api/municipios")
     bookingError.textContent = "Erro ao carregar municípios: " + err.message;
   });
 
-// === Preencher timeslots ===
+// Preencher timeslots
 const timeslots = ["09:00-11:00","11:00-13:00","13:00-15:00","15:00-17:00","17:00-19:00"];
 timeslots.forEach(slot => {
   const opt = document.createElement("option");
@@ -29,7 +29,7 @@ timeslots.forEach(slot => {
   timeslotSelect.appendChild(opt);
 });
 
-// === Submeter novo pedido ===
+// Submeter novo pedido
 document.getElementById("bookingForm").addEventListener("submit", e => {
   e.preventDefault();
   bookingSuccess.textContent = "";
@@ -59,7 +59,7 @@ document.getElementById("bookingForm").addEventListener("submit", e => {
   });
 });
 
-// === Ver pedido por token ===
+// Ver pedido por token
 document.getElementById("checkBtn").addEventListener("click", async () => {
   const token = document.getElementById("tokenInput").value.trim();
   resultDiv.innerHTML = "";
@@ -86,7 +86,7 @@ document.getElementById("checkBtn").addEventListener("click", async () => {
   }
 });
 
-// === Cancelar pedido ===
+// Cancelar pedido
 async function cancelBooking(token) {
   cancelMessage.textContent = "";
   if (!confirm("Tem a certeza que quer cancelar este pedido?")) return;

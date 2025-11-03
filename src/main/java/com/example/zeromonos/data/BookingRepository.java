@@ -1,6 +1,5 @@
 package com.example.zeromonos.data;
 
-import com.example.zeromonos.data.Booking;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
