@@ -58,10 +58,17 @@ public class Booking {
         }
     }
 
-    public void addState(BookingState status) {
-        this.status = status;
-        BookingStateHistory history = new BookingStateHistory(this, status);
-        this.stateHistory.add(history);
+    public void addState(BookingState newState) {
+        if (newState == null) {
+            throw new IllegalArgumentException("Estado não pode ser nulo");
+        }
+    
+        if (this.status == newState) {
+            return;
+        }
+    
+        this.status = newState;
+        this.stateHistory.add(new BookingStateHistory(this, newState));
     }
 
     public String getMunicipality() { return municipality; }

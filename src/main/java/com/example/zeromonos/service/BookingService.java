@@ -25,6 +25,10 @@ public class BookingService {
     // Cria booking com validações
     public Booking createBooking(Booking booking) {
 
+        if (booking.getDescription() == null || booking.getDescription().trim().length() < 3) {
+            throw new IllegalArgumentException("Descrição inválida — demasiado curta");
+        }
+
         // Validação interna (do próprio booking)
         booking.validateSelf();
 

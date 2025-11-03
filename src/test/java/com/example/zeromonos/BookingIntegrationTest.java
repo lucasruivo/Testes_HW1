@@ -113,4 +113,57 @@ class BookingIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(BookingState.CANCELADO.toString()));
     }
+
+    @Test
+    void ShouldRejectBookingWithInvalidMunicipality() throws Exception {
+        Booking invalid = new Booking();
+        invalid.setMunicipality("Inexistente");
+        invalid.setDescription("Teste inválido");
+        invalid.setRequestedDate(LocalDate.now().plusDays(3));
+        invalid.setTimeSlot("13:00-14:00");
+
+        mockMvc.perform(post("/api/bookings")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalid)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value(org.hamcrest.Matchers.containsString("Município inválido")));
+    }
+
+    @Test
+    void ShouldRejectBookingWithTooShortDescription() throws Exception {
+        Booking invalid = new Booking();
+        invalid.setMunicipality("Lisboa");
+        invalid.setDescription("Oi");
+        invalid.setRequestedDate(LocalDate.now().plusDays(2));
+        invalid.setTimeSlot("14:00-15:00");
+
+        mockMvc.perform(post("/api/bookings")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalid)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value(org.hamcrest.Matchers.containsString("Descrição inválida")));
+    }
+
+    @Test
+    void ShouldNotAllowDuplicateTimeSlotSameDay() throws Exception {
+        Booking duplicate = new Booking();
+        duplicate.setMunicipality("Lisboa");
+        duplicate.setDescription("Duplicado");
+        duplicate.setRequestedDate(booking.getRequestedDate());
+        duplicate.setTimeSlot("09:00-11:00");
+
+        mockMvc.perform(post("/api/bookings")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(duplicate)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value(org.hamcrest.Matchers.containsString("mesmo horário")));
+    }
+
+    @Test
+    void ShouldListAllBookingsWhenNoMunicipalityProvided() throws Exception {
+        mockMvc.perform(get("/api/bookings"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].description").exists())
+                .andExpect(jsonPath("$[0].municipality").value("Lisboa"));
+    }
 }

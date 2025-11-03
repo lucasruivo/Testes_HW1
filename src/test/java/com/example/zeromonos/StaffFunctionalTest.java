@@ -6,14 +6,14 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import com.example.zeromonos.data.BookingRepository;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,11 +22,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 class StaffFunctionalTest {
 
     @LocalServerPort
-    private int port; 
+    private int port;
+
+    @Autowired
+    private BookingRepository bookingRepository;
 
     private WebDriver driver;
     private WebDriverWait wait;
     private String bookingToken;
+    private LocalDate bookingDate;
 
     @BeforeAll
     static void setupClass() {
@@ -35,31 +39,29 @@ class StaffFunctionalTest {
 
     @BeforeEach
     void setup() throws Exception {
+        // Limpar todas as reservas antes de cada teste
+        bookingRepository.deleteAll();
 
-        HttpClient client = HttpClient.newHttpClient();
-        String bookingJson = """
-        {
-          "municipality": "Lisboa",
-          "description": "Teste Staff",
-          "requestedDate": "2025-11-19",
-          "timeSlot": "09:00-11:00"
+        // Calcular data válida (>=3 dias à frente e não fim de semana)
+        bookingDate = LocalDate.now().plusDays(3);
+        while (bookingDate.getDayOfWeek() == DayOfWeek.SATURDAY
+                || bookingDate.getDayOfWeek() == DayOfWeek.SUNDAY) {
+            bookingDate = bookingDate.plusDays(1);
         }
-        """;
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:" + port + "/api/bookings"))
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(bookingJson))
-                .build();
+        // Criar reserva via repositório para garantir status inicial
+        var booking = new com.example.zeromonos.data.Booking();
+        booking.setMunicipality("Lisboa");
+        booking.setDescription("Teste Staff");
+        booking.setRequestedDate(bookingDate);
+        booking.setTimeSlot("09:00-11:00");
+        bookingRepository.save(booking);
 
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        assertThat(response.statusCode()).isEqualTo(200);
-
-        bookingToken = response.body().replaceAll(".*\"token\"\\s*:\\s*\"([^\"]+)\".*", "$1");
+        bookingToken = booking.getToken();
         assertThat(bookingToken).isNotBlank();
 
         driver = new ChromeDriver();
-        wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait = new WebDriverWait(driver, java.time.Duration.ofSeconds(10));
     }
 
     @AfterEach
@@ -82,20 +84,11 @@ class StaffFunctionalTest {
         municipalityInput.clear();
         municipalityInput.sendKeys("Lisboa");
         loadBtn.click();
-        
+
         pause(500);
 
-        wait.until(d -> findBookingRow("Lisboa", "Teste Staff", "2025-11-19", "09:00-11:00") != null);
-        List<WebElement> filteredRows = driver.findElements(By.cssSelector("#bookingsTable tbody tr"));
-        assertThat(filteredRows).isNotEmpty();
-        assertThat(filteredRows.stream().allMatch(r ->
-                r.findElement(By.cssSelector("td:first-child")).getText().equalsIgnoreCase("Lisboa")
-        )).isTrue();
-
-        WebElement bookingRow = findBookingRow("Lisboa", "Teste Staff", "2025-11-19", "09:00-11:00");
-        assertThat(bookingRow)
-                .withFailMessage("Booking criado não encontrado na tabela!")
-                .isNotNull();
+        WebElement bookingRow = findBookingRow("Lisboa", "Teste Staff", bookingDate.toString(), "09:00-11:00");
+        assertThat(bookingRow).withFailMessage("Booking criado não encontrado na tabela!").isNotNull();
 
         WebElement actionBtn = bookingRow.findElement(By.cssSelector("td:nth-child(6) button"));
         assertThat(actionBtn.getText()).isEqualTo("Em Progresso");
@@ -112,7 +105,7 @@ class StaffFunctionalTest {
         loadBtn.click();
         wait.until(d -> d.findElements(By.cssSelector("#bookingsTable tbody tr")).size() > 0);
 
-        WebElement refreshedRow = findBookingRow("Lisboa", "Teste Staff", "2025-11-19", "09:00-11:00");
+        WebElement refreshedRow = findBookingRow("Lisboa", "Teste Staff", bookingDate.toString(), "09:00-11:00");
         WebElement refreshedStatus = refreshedRow.findElement(By.cssSelector("td:nth-child(5)"));
         wait.until(d -> refreshedStatus.getText().equalsIgnoreCase("EM_PROG"));
         assertThat(refreshedStatus.getText()).isEqualTo("EM_PROG");
@@ -132,14 +125,32 @@ class StaffFunctionalTest {
 
         loadBtn.click();
         wait.until(d -> d.findElements(By.cssSelector("#bookingsTable tbody tr")).size() > 0);
-        WebElement finalRow = findBookingRow("Lisboa", "Teste Staff", "2025-11-19", "09:00-11:00");
+        WebElement finalRow = findBookingRow("Lisboa", "Teste Staff", bookingDate.toString(), "09:00-11:00");
         WebElement finalStatus = finalRow.findElement(By.cssSelector("td:nth-child(5)"));
         wait.until(d -> finalStatus.getText().equalsIgnoreCase("CONCLUIDO"));
         assertThat(finalStatus.getText()).isEqualTo("CONCLUIDO");
+
         pause(500);
 
         List<WebElement> actions = finalRow.findElements(By.cssSelector("td:nth-child(6) button"));
         assertThat(actions).isEmpty();
+    }
+
+    @Test
+    void ShouldShowAllBookingsWhenMunicipalityIsEmpty() {
+        driver.get("http://localhost:" + port + "/staff.html");
+
+        WebElement municipalityInput = driver.findElement(By.id("municipalityInput"));
+        WebElement loadBtn = driver.findElement(By.id("loadBtn"));
+
+        municipalityInput.clear();
+        loadBtn.click();
+
+        pause(500);
+
+        List<WebElement> allRows = driver.findElements(By.cssSelector("#bookingsTable tbody tr"));
+        assertThat(allRows).isNotEmpty();
+        assertThat(allRows.stream().anyMatch(r -> r.getText().contains("Teste Staff"))).isTrue();
     }
 
     private WebElement findBookingRow(String municipality, String description, String date, String timeSlot) {

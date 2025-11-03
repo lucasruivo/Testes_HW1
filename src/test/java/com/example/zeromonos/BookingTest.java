@@ -1,13 +1,16 @@
 package com.example.zeromonos;
 
-import org.junit.jupiter.api.Test;
-
 import com.example.zeromonos.data.Booking;
 import com.example.zeromonos.data.BookingState;
 import com.example.zeromonos.data.BookingStateHistory;
+import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,7 +20,7 @@ public class BookingTest {
     void InitializeWithReceivedStateAndToken() {
         Booking booking = new Booking();
 
-        assertNotNull(booking.getToken());
+        assertNotNull(booking.getToken(), "O token não deve ser nulo");
         assertEquals(BookingState.RECEBIDO, booking.getStatus());
         assertFalse(booking.getStateHistory().isEmpty());
     }
@@ -30,6 +33,26 @@ public class BookingTest {
         assertEquals(BookingState.EM_PROG, booking.getStatus());
         assertEquals(2, booking.getStateHistory().size());
         assertEquals(BookingState.EM_PROG, booking.getStateHistory().get(1).getStatus());
+    }
+
+    @Test
+    void AddingSameStateTwiceDoesNotDuplicate() {
+        Booking booking = new Booking();
+        booking.addState(BookingState.RECEBIDO); // mesmo estado inicial
+        assertEquals(1, booking.getStateHistory().size(), "Não deve duplicar o estado inicial");
+    }
+
+    @Test
+    void AddMultipleStatesShouldKeepOrder() {
+        Booking booking = new Booking();
+        booking.addState(BookingState.EM_PROG);
+        booking.addState(BookingState.CONCLUIDO);
+
+        List<BookingStateHistory> history = booking.getStateHistory();
+        assertEquals(3, history.size());
+        assertEquals(BookingState.RECEBIDO, history.get(0).getStatus());
+        assertEquals(BookingState.EM_PROG, history.get(1).getStatus());
+        assertEquals(BookingState.CONCLUIDO, history.get(2).getStatus());
     }
 
     @Test
@@ -93,7 +116,6 @@ public class BookingTest {
 
         LocalDate saturday = LocalDate.now().with(DayOfWeek.SATURDAY);
         if (saturday.isBefore(LocalDate.now())) saturday = saturday.plusWeeks(1);
-
         booking.setRequestedDate(saturday);
 
         Exception e = assertThrows(IllegalArgumentException.class, booking::validateSelf);
@@ -103,7 +125,7 @@ public class BookingTest {
     @Test
     void FailWhenDateTooSoon() {
         Booking booking = validBooking();
-        booking.setRequestedDate(nextWeekday(2));
+        booking.setRequestedDate(nextWeekday(1));
 
         Exception e = assertThrows(IllegalArgumentException.class, booking::validateSelf);
         assertTrue(e.getMessage().contains("O pedido deve ser feito com pelo menos 3 dias de antecedência"));
@@ -116,6 +138,46 @@ public class BookingTest {
 
         assertNotNull(history.getTimestamp());
         assertEquals(BookingState.CONCLUIDO, history.getStatus());
+    }
+
+    @Test
+    void EachBookingHasUniqueToken() {
+        Set<String> tokens = new HashSet<>();
+        for (int i = 0; i < 50; i++) {
+            Booking booking = new Booking();
+            assertTrue(tokens.add(booking.getToken()), "Token duplicado encontrado!");
+        }
+    }
+
+    @Test
+    void ChangeStateToCancelled() {
+        Booking booking = validBooking();
+        booking.addState(BookingState.CANCELADO);
+        assertEquals(BookingState.CANCELADO, booking.getStatus());
+    }
+
+    @Test
+    void HistoryShouldContainTimestampsInOrder() {
+        Booking booking = new Booking();
+        booking.addState(BookingState.EM_PROG);
+        booking.addState(BookingState.CONCLUIDO);
+
+        List<BookingStateHistory> history = booking.getStateHistory();
+        assertTrue(history.get(0).getTimestamp().isBefore(history.get(1).getTimestamp())
+                || history.get(0).getTimestamp().equals(history.get(1).getTimestamp()));
+    }
+
+    @RepeatedTest(3)
+    void ValidateMultipleValidBookings() {
+        Booking booking = validBooking();
+        assertDoesNotThrow(booking::validateSelf);
+    }
+
+    @Test
+    void ShouldAllowFutureDates() {
+        Booking booking = validBooking();
+        booking.setRequestedDate(LocalDate.now().plusDays(10));
+        assertDoesNotThrow(booking::validateSelf);
     }
 
     private Booking validBooking() {

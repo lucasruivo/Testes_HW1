@@ -64,6 +64,8 @@ document.getElementById("checkBtn").addEventListener("click", async () => {
   const token = document.getElementById("tokenInput").value.trim();
   resultDiv.innerHTML = "";
   cancelMessage.textContent = "";
+  bookingError.textContent = "";
+
   if (!token) {
     bookingError.textContent = "Introduza um código de pedido!";
     return;
@@ -71,7 +73,11 @@ document.getElementById("checkBtn").addEventListener("click", async () => {
 
   try {
     const resp = await fetch(`/api/bookings/${token}`);
-    if (!resp.ok) throw new Error("Pedido não encontrado");
+    if (!resp.ok) {
+      // Mensagem para token não existente
+      resultDiv.textContent = "Reserva não encontrada";
+      return;
+    }
     const b = await resp.json();
     resultDiv.innerHTML = `
       <p><strong>Município:</strong> ${b.municipality}</p>
@@ -82,7 +88,8 @@ document.getElementById("checkBtn").addEventListener("click", async () => {
       ${b.status !== 'CANCELADO' ? `<button onclick="cancelBooking('${b.token}')">Cancelar Pedido</button>` : ''}
     `;
   } catch (err) {
-    bookingError.textContent = err.message;
+    resultDiv.textContent = "Erro ao consultar a reserva";
+    console.error(err);
   }
 });
 
@@ -90,12 +97,17 @@ document.getElementById("checkBtn").addEventListener("click", async () => {
 async function cancelBooking(token) {
   cancelMessage.textContent = "";
   if (!confirm("Tem a certeza que quer cancelar este pedido?")) return;
-  
-  const resp = await fetch(`/api/bookings/${token}`, { method: "DELETE" });
-  if (resp.ok) {
-    cancelMessage.textContent = "Pedido cancelado com sucesso.";
-    document.getElementById("checkBtn").click();
-  } else {
+
+  try {
+    const resp = await fetch(`/api/bookings/${token}`, { method: "DELETE" });
+    if (resp.ok) {
+      cancelMessage.textContent = "Pedido cancelado com sucesso.";
+      document.getElementById("checkBtn").click();
+    } else {
+      cancelMessage.textContent = "Erro ao cancelar pedido.";
+    }
+  } catch (err) {
     cancelMessage.textContent = "Erro ao cancelar pedido.";
+    console.error(err);
   }
 }

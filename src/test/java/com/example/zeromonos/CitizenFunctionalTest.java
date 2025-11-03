@@ -92,4 +92,80 @@ class CitizenFunctionalTest {
         wait.until(d -> resultDiv.getText().contains("Estado: CANCELADO"));
         assertThat(resultDiv.getText()).contains("CANCELADO");
     }
+
+    @Test
+void ShouldRejectBookingWithInvalidMunicipality() {
+    driver.get("http://localhost:" + port + "/index.html");
+
+    WebElement municipality = driver.findElement(By.id("municipality"));
+    WebElement description = driver.findElement(By.id("description"));
+    WebElement requestedDate = driver.findElement(By.id("requestedDate"));
+
+    ((JavascriptExecutor) driver).executeScript(
+        "arguments[0].value = arguments[1];",
+        requestedDate,
+        "2025-11-20"
+    );
+
+    wait.until(d -> d.findElements(By.cssSelector("#timeslot option")).size() > 0);
+    WebElement timeslot = driver.findElement(By.id("timeslot"));
+
+    municipality.sendKeys("Atlantis"); // município inválido
+    description.sendKeys("Pedido teste inválido");
+    timeslot.sendKeys("09:00-11:00");
+
+    ((JavascriptExecutor) driver)
+            .executeScript("document.getElementById('bookingForm').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));");
+
+    WebElement bookingError = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("bookingError")));
+    String errorText = bookingError.getText();
+
+    assertThat(errorText).contains("Município é obrigatório");
+}
+
+@Test
+void ShouldRejectBookingWithShortDescription() {
+    driver.get("http://localhost:" + port + "/index.html");
+
+    WebElement municipality = driver.findElement(By.id("municipality"));
+    WebElement description = driver.findElement(By.id("description"));
+    WebElement requestedDate = driver.findElement(By.id("requestedDate"));
+
+    ((JavascriptExecutor) driver).executeScript(
+        "arguments[0].value = arguments[1];",
+        requestedDate,
+        "2025-11-21"
+    );
+
+    wait.until(d -> d.findElements(By.cssSelector("#timeslot option")).size() > 0);
+    WebElement timeslot = driver.findElement(By.id("timeslot"));
+
+    municipality.sendKeys("Lisboa");
+    description.sendKeys("Oi"); // descrição demasiado curta
+    timeslot.sendKeys("10:00-11:00");
+
+    ((JavascriptExecutor) driver)
+            .executeScript("document.getElementById('bookingForm').dispatchEvent(new Event('submit', {bubbles: true, cancelable: true}));");
+
+    WebElement bookingError = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("bookingError")));
+    String errorText = bookingError.getText();
+
+    assertThat(errorText).contains("Descrição inválida");
+}
+
+@Test
+void ShouldShowErrorForUnknownToken() {
+    driver.get("http://localhost:" + port + "/index.html");
+
+    WebElement tokenInput = driver.findElement(By.id("tokenInput"));
+    WebElement checkBtn = driver.findElement(By.id("checkBtn"));
+
+    tokenInput.sendKeys("TOKEN_INEXISTENTE_123");
+    checkBtn.click();
+
+    WebElement statusResult = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("statusResult")));
+    String text = statusResult.getText();
+
+    assertThat(text).contains("Reserva não encontrada");
+}
 }

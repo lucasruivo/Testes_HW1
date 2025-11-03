@@ -1,8 +1,8 @@
 package com.example.zeromonos;
 
 import com.example.zeromonos.data.Booking;
-import com.example.zeromonos.data.BookingState;
 import com.example.zeromonos.data.BookingRepository;
+import com.example.zeromonos.data.BookingState;
 import com.example.zeromonos.service.BookingService;
 import com.example.zeromonos.service.MunicipioService;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,6 +51,17 @@ class BookingServiceTest {
         assertEquals(BookingState.RECEBIDO, saved.getStatus());
         assertNotNull(saved.getToken());
         verify(repository, times(1)).save(validBooking);
+    }
+
+    @Test
+    void RejectBookingIfInvalidMunicipality() {
+        when(municipioService.isValidMunicipality("Lisboa")).thenReturn(false);
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> bookingService.createBooking(validBooking));
+
+        assertTrue(ex.getMessage().contains("Município inválido"));
+        verify(repository, never()).save(any());
     }
 
     @Test
@@ -112,6 +123,51 @@ class BookingServiceTest {
                 () -> bookingService.updateBookingStatus(validBooking.getToken(), BookingState.RECEBIDO));
         assertTrue(ex.getMessage().contains("Transição inválida"));
     }
+
+    @Test
+    void GetBookingsByMunicipalityShouldReturnList() {
+        when(repository.findByMunicipality("Lisboa")).thenReturn(List.of(validBooking));
+
+        List<Booking> result = bookingService.getBookingsByMunicipality("Lisboa");
+
+        assertEquals(1, result.size());
+        assertEquals("Lisboa", result.get(0).getMunicipality());
+    }
+
+    @Test
+    void GetBookingsByMunicipalityShouldReturnEmptyList() {
+        when(repository.findByMunicipality("Porto")).thenReturn(List.of());
+
+        List<Booking> result = bookingService.getBookingsByMunicipality("Porto");
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void ShouldPreventTransitionFromConcluidoToAnyOther() {
+        validBooking.addState(BookingState.CONCLUIDO);
+        when(repository.findByToken(validBooking.getToken())).thenReturn(Optional.of(validBooking));
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> bookingService.updateBookingStatus(validBooking.getToken(), BookingState.EM_PROG));
+
+        assertTrue(ex.getMessage().contains("Transição inválida"));
+    }
+
+    @Test
+    void RejectBookingIfDescriptionTooShort() {
+        validBooking.setDescription("A");
+        when(repository.findAll()).thenReturn(List.of());
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> bookingService.createBooking(validBooking));
+
+        assertTrue(ex.getMessage().contains("Descrição inválida"));
+    }
+
+    // ------------------------------
+    // Métodos auxiliares
+    // ------------------------------
 
     private Booking createBookingWithDateAndState(LocalDate date, BookingState state) {
         Booking b = new Booking();

@@ -23,8 +23,8 @@ public class Booking {
     @Enumerated(EnumType.STRING)
     private BookingState status;
 
-<span class="fc" id="L26">    @OneToMany(mappedBy = &quot;booking&quot;, cascade = CascadeType.ALL, orphanRemoval = true)</span>
-    private List&lt;BookingStateHistory&gt; stateHistory = new ArrayList&lt;&gt;();
+    @OneToMany(mappedBy = &quot;booking&quot;, cascade = CascadeType.ALL, orphanRemoval = true)
+<span class="fc" id="L27">    private List&lt;BookingStateHistory&gt; stateHistory = new ArrayList&lt;&gt;();</span>
 
 <span class="fc" id="L29">    public Booking() {</span>
 <span class="fc" id="L30">        this.token = UUID.randomUUID().toString();</span>
@@ -33,7 +33,7 @@ public class Booking {
 
     // Regras de negócio
     public void validateSelf() {
-<span class="pc bpc" id="L36" title="1 of 4 branches missed.">        if (municipality == null || municipality.isBlank()) {</span>
+<span class="fc bfc" id="L36" title="All 4 branches covered.">        if (municipality == null || municipality.isBlank()) {</span>
 <span class="fc" id="L37">            throw new IllegalArgumentException(&quot;Município é obrigatório.&quot;);</span>
         }
 <span class="pc bpc" id="L39" title="1 of 4 branches missed.">        if (description == null || description.isBlank()) {</span>
@@ -58,22 +58,29 @@ public class Booking {
         }
 <span class="fc" id="L59">    }</span>
 
-    public void addState(BookingState status) {
-<span class="fc" id="L62">        this.status = status;</span>
-<span class="fc" id="L63">        BookingStateHistory history = new BookingStateHistory(this, status);</span>
-<span class="fc" id="L64">        this.stateHistory.add(history);</span>
-<span class="fc" id="L65">    }</span>
+    public void addState(BookingState newState) {
+<span class="pc bpc" id="L62" title="1 of 2 branches missed.">        if (newState == null) {</span>
+<span class="nc" id="L63">            throw new IllegalArgumentException(&quot;Estado não pode ser nulo&quot;);</span>
+        }
+    
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        if (this.status == newState) {</span>
+<span class="fc" id="L67">            return;</span>
+        }
+    
+<span class="fc" id="L70">        this.status = newState;</span>
+<span class="fc" id="L71">        this.stateHistory.add(new BookingStateHistory(this, newState));</span>
+<span class="fc" id="L72">    }</span>
 
-<span class="fc" id="L67">    public String getMunicipality() { return municipality; }</span>
-<span class="fc" id="L68">    public void setMunicipality(String municipality) { this.municipality = municipality; }</span>
-<span class="fc" id="L69">    public String getDescription() { return description; }</span>
-<span class="fc" id="L70">    public void setDescription(String description) { this.description = description; }</span>
-<span class="fc" id="L71">    public LocalDate getRequestedDate() { return requestedDate; }</span>
-<span class="fc" id="L72">    public void setRequestedDate(LocalDate requestedDate) { this.requestedDate = requestedDate; }</span>
-<span class="fc" id="L73">    public String getTimeSlot() { return timeSlot; }</span>
-<span class="fc" id="L74">    public void setTimeSlot(String timeSlot) { this.timeSlot = timeSlot; }</span>
-<span class="fc" id="L75">    public String getToken() { return token; }</span>
-<span class="fc" id="L76">    public BookingState getStatus() { return status; }</span>
-<span class="fc" id="L77">    public List&lt;BookingStateHistory&gt; getStateHistory() { return stateHistory; }</span>
+<span class="fc" id="L74">    public String getMunicipality() { return municipality; }</span>
+<span class="fc" id="L75">    public void setMunicipality(String municipality) { this.municipality = municipality; }</span>
+<span class="fc" id="L76">    public String getDescription() { return description; }</span>
+<span class="fc" id="L77">    public void setDescription(String description) { this.description = description; }</span>
+<span class="fc" id="L78">    public LocalDate getRequestedDate() { return requestedDate; }</span>
+<span class="fc" id="L79">    public void setRequestedDate(LocalDate requestedDate) { this.requestedDate = requestedDate; }</span>
+<span class="fc" id="L80">    public String getTimeSlot() { return timeSlot; }</span>
+<span class="fc" id="L81">    public void setTimeSlot(String timeSlot) { this.timeSlot = timeSlot; }</span>
+<span class="fc" id="L82">    public String getToken() { return token; }</span>
+<span class="fc" id="L83">    public BookingState getStatus() { return status; }</span>
+<span class="fc" id="L84">    public List&lt;BookingStateHistory&gt; getStateHistory() { return stateHistory; }</span>
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

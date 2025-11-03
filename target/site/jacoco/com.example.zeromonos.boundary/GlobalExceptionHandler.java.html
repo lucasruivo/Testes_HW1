@@ -18,11 +18,11 @@ import java.util.Map;
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity&lt;Map&lt;String, String&gt;&gt; handleIllegalArgument(IllegalArgumentException ex) {
-<span class="nc" id="L21">        logger.error(&quot;Exceção capturada: {}&quot;, ex.getMessage());</span>
+<span class="fc" id="L21">        logger.error(&quot;Exceção capturada: {}&quot;, ex.getMessage());</span>
 
-<span class="nc" id="L23">        Map&lt;String, String&gt; body = new HashMap&lt;&gt;();</span>
-<span class="nc" id="L24">        body.put(&quot;error&quot;, ex.getMessage());</span>
-<span class="nc" id="L25">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);</span>
+<span class="fc" id="L23">        Map&lt;String, String&gt; body = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L24">        body.put(&quot;error&quot;, ex.getMessage());</span>
+<span class="fc" id="L25">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);</span>
     }
 
     @ExceptionHandler(ResponseStatusException.class)
@@ -43,4 +43,4 @@ import java.util.Map;
 <span class="fc" id="L43">        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);</span>
     }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -35,7 +35,7 @@ public class BookingController {
     public Booking getBooking(@PathVariable String token) {
 <span class="fc" id="L36">        logger.info(&quot;Consultar booking pelo token: {}&quot;, token);</span>
 <span class="fc" id="L37">        return bookingService.getBookingByToken(token)</span>
-<span class="pc" id="L38">                .orElseThrow(() -&gt; new RuntimeException(&quot;Booking não encontrado&quot;));</span>
+<span class="fc" id="L38">                .orElseThrow(() -&gt; new RuntimeException(&quot;Booking não encontrado&quot;));</span>
     }
 
     // Listar bookings por município
@@ -59,7 +59,7 @@ public class BookingController {
 <span class="fc" id="L59">        } catch (IllegalArgumentException e) {</span>
 <span class="fc" id="L60">            logger.warn(&quot;Tentativa de atualizar booking token={} para estado inválido: {}&quot;, token, status);</span>
 <span class="fc" id="L61">            throw new ResponseStatusException(</span>
-                    HttpStatus.BAD_REQUEST,
+<span class="fc" id="L62">                    HttpStatus.BAD_REQUEST,</span>
 <span class="fc" id="L63">                    &quot;Estado inválido: &quot; + status + &quot;. Valores válidos: &quot; + java.util.Arrays.toString(BookingState.values())</span>
             );
         }
@@ -72,4 +72,4 @@ public class BookingController {
 <span class="fc" id="L72">        return bookingService.updateBookingStatus(token, BookingState.CANCELADO);</span>
     }
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>
