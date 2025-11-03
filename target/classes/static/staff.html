@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <title>Painel de Staff</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
+</head>
+<body>
+  <h1>Gestão de Pedidos</h1>
+
+  <label>Município:</label>
+  <input type="text" id="municipalityInput" placeholder="Ex: Lisboa">
+  <button id="loadBtn">Carregar Pedidos</button>
+
+  <table id="bookingsTable" border="1" style="width:100%; margin-top:1em;">
+    <thead>
+      <tr>
+        <th>Município</th>
+        <th>Descrição</th>
+        <th>Data</th>
+        <th>Horário</th>
+        <th>Estado</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script src="js/staff.js"></script>
+</body>
+</html>

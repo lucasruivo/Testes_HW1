@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BookingStateHistory.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">zeromonos</a> &gt; <a href="index.source.html" class="el_package">com.example.zeromonos.data</a> &gt; <span class="el_source">BookingStateHistory.java</span></div><h1>BookingStateHistory.java</h1><pre class="source lang-java linenums">package com.example.zeromonos.data;
+
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import com.example.zeromonos.data.BookingState;
+import com.example.zeromonos.data.Booking;
+
+@Entity
+public class BookingStateHistory {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+
+    private LocalDateTime timestamp;
+
+    @Enumerated(EnumType.STRING)
+    private BookingState status;
+
+    @ManyToOne
+    private Booking booking;
+
+<span class="fc" id="L23">    public BookingStateHistory() {}</span>
+
+<span class="fc" id="L25">    public BookingStateHistory(Booking booking, BookingState status) {</span>
+<span class="fc" id="L26">        this.booking = booking;</span>
+<span class="fc" id="L27">        this.status = status;</span>
+<span class="fc" id="L28">        this.timestamp = LocalDateTime.now();</span>
+<span class="fc" id="L29">    }</span>
+
+    // getters
+<span class="fc" id="L32">    public LocalDateTime getTimestamp() { return timestamp; }</span>
+<span class="fc" id="L33">    public BookingState getStatus() { return status; }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

@@ -1,0 +1,10 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+zeromonos,com.example.zeromonos.boundary,MunicipioController,0,10,0,0,0,4,0,2,0,2
+zeromonos,com.example.zeromonos.boundary,BookingController,5,104,0,2,0,24,1,8,1,7
+zeromonos,com.example.zeromonos.boundary,GlobalExceptionHandler,20,47,0,0,4,10,1,4,1,4
+zeromonos,com.example.zeromonos,ZeromonosApplication,5,3,0,0,2,1,1,1,1,1
+zeromonos,com.example.zeromonos.service,BookingService,20,188,9,27,1,40,8,20,1,9
+zeromonos,com.example.zeromonos.service,MunicipioService,0,23,0,0,0,5,0,3,0,3
+zeromonos,com.example.zeromonos.data,BookingStateHistory,0,21,0,0,0,8,0,4,0,4
+zeromonos,com.example.zeromonos.data,Booking,0,139,4,16,0,34,4,20,0,14
+zeromonos,com.example.zeromonos.data,BookingState,0,33,0,0,0,6,0,1,0,1

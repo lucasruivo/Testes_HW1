@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pt"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BookingController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">zeromonos</a> &gt; <a href="index.source.html" class="el_package">com.example.zeromonos.boundary</a> &gt; <span class="el_source">BookingController.java</span></div><h1>BookingController.java</h1><pre class="source lang-java linenums">package com.example.zeromonos.boundary;
+
+import com.example.zeromonos.data.Booking;
+import com.example.zeromonos.data.BookingState;
+import com.example.zeromonos.service.BookingService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
+
+@RestController
+@RequestMapping(&quot;/api/bookings&quot;)
+public class BookingController {
+
+    private final BookingService bookingService;
+<span class="fc" id="L19">    private static final Logger logger = LoggerFactory.getLogger(BookingController.class);</span>
+
+<span class="fc" id="L21">    public BookingController(BookingService bookingService) {</span>
+<span class="fc" id="L22">        this.bookingService = bookingService;</span>
+<span class="fc" id="L23">    }</span>
+
+    // Criar novo booking
+    @PostMapping
+    public Booking createBooking(@RequestBody Booking booking) {
+<span class="fc" id="L28">        logger.info(&quot;Criar novo booking: município={}, data={}, timeslot={}&quot;, </span>
+<span class="fc" id="L29">                    booking.getMunicipality(), booking.getRequestedDate(), booking.getTimeSlot());</span>
+<span class="fc" id="L30">        return bookingService.createBooking(booking);</span>
+    }
+
+    // Encontrar booking pelo token
+    @GetMapping(&quot;/{token}&quot;)
+    public Booking getBooking(@PathVariable String token) {
+<span class="fc" id="L36">        logger.info(&quot;Consultar booking pelo token: {}&quot;, token);</span>
+<span class="fc" id="L37">        return bookingService.getBookingByToken(token)</span>
+<span class="pc" id="L38">                .orElseThrow(() -&gt; new RuntimeException(&quot;Booking não encontrado&quot;));</span>
+    }
+
+    // Listar bookings por município
+    @GetMapping
+    public List&lt;Booking&gt; getBookingsByMunicipality(@RequestParam(required = false) String municipality) {
+<span class="fc bfc" id="L44" title="All 2 branches covered.">        if (municipality != null ) {</span>
+<span class="fc" id="L45">            logger.info(&quot;Listar bookings para município: {}&quot;, municipality);</span>
+<span class="fc" id="L46">            return bookingService.getBookingsByMunicipality(municipality);</span>
+        }
+<span class="fc" id="L48">        logger.info(&quot;Listar todos os bookings&quot;);</span>
+<span class="fc" id="L49">        return bookingService.getAllBookings();</span>
+    }
+
+    @PutMapping(&quot;/{token}&quot;)
+    public Booking updateBookingStatus(@PathVariable String token, @RequestParam String status) {
+        try {
+<span class="fc" id="L55">            BookingState newState = BookingState.valueOf(status);</span>
+<span class="fc" id="L56">            logger.info(&quot;Atualizar booking token={} para estado={}&quot;, token, newState);</span>
+<span class="fc" id="L57">            return bookingService.updateBookingStatus(token, newState);</span>
+<span class="fc" id="L58">        } catch (IllegalArgumentException e) {</span>
+<span class="fc" id="L59">            logger.warn(&quot;Tentativa de atualizar booking token={} para estado inválido: {}&quot;, token, status);</span>
+<span class="fc" id="L60">            throw new ResponseStatusException(</span>
+                    HttpStatus.BAD_REQUEST,
+<span class="fc" id="L62">                    &quot;Estado inválido: &quot; + status + &quot;. Valores válidos: &quot; + java.util.Arrays.toString(BookingState.values())</span>
+            );
+        }
+    }
+
+    // Cancelar um booking
+    @DeleteMapping(&quot;/{token}&quot;)
+    public Booking cancelBooking(@PathVariable String token) {
+<span class="fc" id="L70">        logger.info(&quot;Cancelar booking token={}&quot;, token);</span>
+<span class="fc" id="L71">        return bookingService.updateBookingStatus(token, BookingState.CANCELADO);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
